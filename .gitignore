@@ -1,0 +1,11 @@
+build/
+kernel
+kernel.asm
+
+.idea/
+.vscode/
+cmake-build-*/
+
+.gdbinit
+*.log
+.DS_Store
