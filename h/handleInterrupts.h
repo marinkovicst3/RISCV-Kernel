@@ -1,13 +1,14 @@
-#ifndef PROJECT_BASE_HANDLETRAPS_H
-#define PROJECT_BASE_HANDLETRAPS_H
+#ifndef HANDLEINTERRUPTS_H
+#define HANDLEINTERRUPTS_H
 
 class Interrupts {
 public:
     static void supervisorTrap();
     static void handleSupervisorTrap();
+
 private:
     static void* handleMemAlloc();
-    static void handleMemFree(void* adr);
+    static int handleMemFree();
 };
 
 #endif

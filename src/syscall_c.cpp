@@ -1,22 +1,22 @@
 #include  "../h/syscall_c.h"
 
-void *mem_alloc(size_t size) {
-    size_t blocks = (size+MEM_BLOCK_SIZE-1)/MEM_BLOCK_SIZE;
-    size_t opcode = 0x01;
-    __asm__ __volatile__(
-        "mv a0,%[code]\n\t"
-        "mv a1,%[bl]\n\t"
-        "ecall"
-        : : [code] "r" (opcode),
-            [bl] "r" (blocks)
-        : "a0","a1"
-    );
-
+void* abi_syscall(size_t opcode, size_t args1=0, size_t args2 = 0, size_t args3 = 0) {
     void* ret;
-    asm volatile ("mv %[re], a0" : [re] "=r" (ret));
+    __asm__ __volatile__(
+        "ecall\n\t"
+        "mv %[re],a0"
+        : [re] "=r" (ret)
+    );
     return ret;
 }
 
-int mem_free(void* adr) {
-    
+void* mem_alloc(size_t size) {
+    size_t blocks = (size+MEM_BLOCK_SIZE-1)/MEM_BLOCK_SIZE;
+    return abi_syscall(0x01,blocks);
 }
+
+int mem_free(void* adr) {
+    void* res = abi_syscall(0x02, (size_t)adr);
+    return (int)(size_t)res;
+}
+

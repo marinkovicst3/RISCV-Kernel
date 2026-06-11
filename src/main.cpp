@@ -9,7 +9,7 @@ int main() {
     uint64 funk = (uint64)&Interrupts::supervisorTrap;
     RiscvHardware::writeStvec(funk);
     void* adr = mem_alloc(500);
-    size_t x = (size_t)adr;
-    x=5;
-    return x;
+    __putc('a');
+    int y = mem_free(adr);
+    return y;
 }
