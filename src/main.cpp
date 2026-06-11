@@ -1,14 +1,15 @@
-#include "../h/MemoryAllocator.h"
+#include "../h/handleInterrupts.h"
+#include "../h/memoryAllocator.h"
+#include "../h/riscvHardware.h"
 #include "../lib/console.h"
-void main() {
+#include "../h/syscall_c.h"
+
+int main() {
     MemoryAllocator::getInstance().init();
-
-    void* p1 = MemoryAllocator::getInstance().mem_alloc(100);
-    if (p1 != nullptr) {
-        __putc('A');
-        void* p2 = MemoryAllocator::getInstance().mem_alloc(200);
-        MemoryAllocator::getInstance().mem_free(p1);
-        MemoryAllocator::getInstance().mem_free(p2);
-    }
-
+    uint64 funk = (uint64)&Interrupts::supervisorTrap;
+    RiscvHardware::writeStvec(funk);
+    void* adr = mem_alloc(500);
+    size_t x = (size_t)adr;
+    x=5;
+    return x;
 }

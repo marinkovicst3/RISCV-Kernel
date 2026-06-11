@@ -1,5 +1,5 @@
 
-#include "../h/MemoryAllocator.h"
+#include "../h/memoryAllocator.h"
 
 MemoryAllocator* MemoryAllocator::instance = nullptr;
 
@@ -70,7 +70,7 @@ void MemoryAllocator::join(Block *first, Block *second) {
 void* MemoryAllocator::mem_alloc(size_t size) {
     if(size == 0) return nullptr;
 
-    size_t bytesNeeded = roundBytesToBlock(size);
+    size_t bytesNeeded = size*MEM_BLOCK_SIZE;
     Block* frag = findFirstFit(bytesNeeded);
     if(!frag) return nullptr;
 
