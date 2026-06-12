@@ -8,10 +8,6 @@ class Deque {
 public:
     Deque() : head(nullptr), tail(nullptr), count(0) {}
 
-    ~Deque() {
-        clear();
-    }
-
     void clear() {
         while (!empty()) {
             pop_front();
