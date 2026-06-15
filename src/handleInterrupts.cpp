@@ -2,6 +2,8 @@
 
 #include "../h/memoryAllocator.h"
 #include "../h/riscvHardware.h"
+#include "../h/scheduler.h"
+#include "../h/tcb.h"
 #include "../lib/hw.h"
 
 void* Interrupts::handleMemAlloc() {
@@ -14,6 +16,21 @@ int Interrupts::handleMemFree() {
     void* adr = (void*) RiscvHardware::readA1();
     int x = MemoryAllocator::getInstance().mem_free(adr);
     return x;
+}
+
+int Interrupts::handleThreadCreate() {
+    TCB** handle = (TCB**) RiscvHardware::readA1();
+    Routine routine = (Routine) RiscvHardware::readA2();
+    void* arg = (void*) RiscvHardware::readA3();
+    uint64* userStackTop = (uint64*) RiscvHardware::readA4();
+    TCB* newThread = new TCB(routine,arg);
+    if (newThread == nullptr) return -1;
+    TCB::setUserStack(userStackTop);
+    if (handle != nullptr) {
+        *handle = newThread;
+    }
+    Scheduler::getInstance().put(newThread);
+    return 0;
 }
 
 void Interrupts::handleSupervisorTrap() {
@@ -33,6 +50,14 @@ void Interrupts::handleSupervisorTrap() {
                 int x = handleMemFree();
                 RiscvHardware::writeA0OnStack((uint64) x);
                 break;
+            }
+            case 0x11: {
+                int x = handleThreadCreate();
+                RiscvHardware::writeA0OnStack((uint64) x);
+                break;
+            }
+            case 0x13: {
+
             }
             default:
                 break;

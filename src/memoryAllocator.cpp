@@ -3,7 +3,7 @@
 
 MemoryAllocator* MemoryAllocator::instance = nullptr;
 
-MemoryAllocator &MemoryAllocator::getInstance() {
+MemoryAllocator& MemoryAllocator::getInstance() {
     if(instance == nullptr){
         static MemoryAllocator glAlloc;
         instance = &glAlloc;

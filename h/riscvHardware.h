@@ -51,6 +51,12 @@ public:
 
     static uint64 readA2();
     static void writeA2(uint64 value);
+
+    static uint64 readA3();
+    static void writeA3(uint64 value);
+
+    static uint64 readA4();
+    static void writeA4(uint64 value);
 };
 
 
@@ -158,6 +164,26 @@ inline uint64 RiscvHardware::readA2() {
 
 inline void RiscvHardware::writeA2(uint64 value) {
     __asm__ volatile ("mv a2, %[in_a2]" : : [in_a2] "r"(value));
+}
+
+inline uint64 RiscvHardware::readA3() {
+    uint64 volatile reg_a3;
+    __asm__ volatile ("mv %[out_a3], a3" : [out_a3] "=r"(reg_a3));
+    return reg_a3;
+}
+
+inline void RiscvHardware::writeA3(uint64 value) {
+    __asm__ volatile ("mv a3, %[in_a3]" : : [in_a3] "r"(value));
+}
+
+inline uint64 RiscvHardware::readA4() {
+    uint64 volatile reg_a4;
+    __asm__ volatile ("mv %[out_a4], a4" : [out_a4] "=r"(reg_a4));
+    return reg_a4;
+}
+
+inline void RiscvHardware::writeA4(uint64 value) {
+    __asm__ volatile ("mv a4, %[in_a4]" : : [in_a4] "r"(value));
 }
 
 inline void RiscvHardware::writeA0OnStack(uint64 value) {

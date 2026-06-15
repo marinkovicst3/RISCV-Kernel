@@ -9,6 +9,7 @@ public:
 private:
     static void* handleMemAlloc();
     static int handleMemFree();
+    static int handleThreadCreate();
 };
 
 #endif
