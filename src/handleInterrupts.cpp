@@ -22,10 +22,10 @@ int Interrupts::handleThreadCreate() {
     TCB** handle = (TCB**) RiscvHardware::readA1();
     Routine routine = (Routine) RiscvHardware::readA2();
     void* arg = (void*) RiscvHardware::readA3();
-    uint64* userStackTop = (uint64*) RiscvHardware::readA4();
-    TCB* newThread = new TCB(routine,arg);
+    char* userStackTop = (char*) RiscvHardware::readA4();
+    void* stackSpace = (void*)(userStackTop - DEFAULT_STACK_SIZE);
+    TCB* newThread = new TCB(routine, arg, stackSpace);
     if (newThread == nullptr) return -1;
-    TCB::setUserStack(userStackTop);
     if (handle != nullptr) {
         *handle = newThread;
     }
@@ -57,7 +57,8 @@ void Interrupts::handleSupervisorTrap() {
                 break;
             }
             case 0x13: {
-
+                TCB::dispatch();
+                break;
             }
             default:
                 break;

@@ -3,8 +3,8 @@
 
 #include "syscall_c.h"
 
-void* ::operator new (size_t);
-void ::operator delete (void*);
+void* operator new (size_t);
+void operator delete (void*);
 
 
 class Thread {
@@ -16,7 +16,8 @@ public:
     static int sleep (time_t);
 protected:
     Thread ();
-    virtual void run () {}
+    virtual void run ();
+
 private:
     thread_t myHandle;
     void (*body)(void*); void* arg;
