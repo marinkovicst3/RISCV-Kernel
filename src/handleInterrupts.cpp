@@ -2,9 +2,9 @@
 
 #include "../h/memoryAllocator.h"
 #include "../h/riscvHardware.h"
-#include "../h/scheduler.h"
 #include "../h/tcb.h"
 #include "../lib/hw.h"
+#include "../h/global_allocators.h"
 
 void* Interrupts::handleMemAlloc() {
     size_t blocks = RiscvHardware::readA1();
@@ -20,16 +20,14 @@ int Interrupts::handleMemFree() {
 
 int Interrupts::handleThreadCreate() {
     TCB** handle = (TCB**) RiscvHardware::readA1();
-    Routine routine = (Routine) RiscvHardware::readA2();
+    Body routine = (Body) RiscvHardware::readA2();
     void* arg = (void*) RiscvHardware::readA3();
-    char* userStackTop = (char*) RiscvHardware::readA4();
-    void* stackSpace = (void*)(userStackTop - DEFAULT_STACK_SIZE);
-    TCB* newThread = new TCB(routine, arg, stackSpace);
+    char* stackSpace = (char*) RiscvHardware::readA4();
+    TCB* newThread = new TCB(routine, arg,(uint64*) stackSpace, DEFAULT_TIME_SLICE);
     if (newThread == nullptr) return -1;
     if (handle != nullptr) {
         *handle = newThread;
     }
-    Scheduler::getInstance().put(newThread);
     return 0;
 }
 

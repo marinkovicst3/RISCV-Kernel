@@ -6,6 +6,8 @@
 class RiscvHardware{
 public:
 
+    static void popSppSpie();
+
     static uint64 readScause();
     static void writeScause(uint64 scause);
 
@@ -59,6 +61,11 @@ public:
     static void writeA4(uint64 value);
 };
 
+
+inline void RiscvHardware::popSppSpie() {
+    __asm__ volatile ("csrw sepc, ra");
+    __asm__ volatile ("sret");
+}
 
 inline uint64 RiscvHardware::readScause() {
     uint64 volatile val;

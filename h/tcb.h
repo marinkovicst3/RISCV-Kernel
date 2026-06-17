@@ -2,43 +2,44 @@
 #define TCB_H
 
 #include "../lib/hw.h"
-
-enum Status { READY, RUNNING, BLOCKED, FINISHED };
-
-using Routine = void(*)(void*);
+using Body = void (*)(void*);
 
 class TCB {
 public:
-    TCB(Routine routine, void* arg, void* stack_space = nullptr);
-    ~TCB();
+    ~TCB() { delete[] stack; }
+    bool isFinished() const { return finished; }
+    void setFinished(bool value) { finished = value; }
+    uint64 getTimeSlice() const { return timeSlice; }
 
-    Status getStatus() { return status; }
-    bool isFinished() { return status == FINISHED; }
-    bool isBlocked() { return status == BLOCKED; }
-
-    void setStatus(Status s) { status = s; }
-
-    static void dispatch();
-
-    static TCB* running;
+    static TCB *createThread(Body body, void* arg, uint64* stackAdr);
+    static void yield();
+    static TCB *running;
+private:
+    TCB(Body body,void* arg, uint64* stackAdr, uint64 timeSlice);
 
     struct Context {
         uint64 ra;
         uint64 sp;
     };
-    //static void contextSwitch(Context* oldContext, Context* newContext);
 
-private:
-    static void threadWrapper();
-
-    Routine routine;
+    Body body;
     void* arg;
-    Status status;
-
+    uint64 *stack;
     Context context;
-    void* stackSpace;
-};
+    uint64 timeSlice;
+    bool finished;
 
-extern "C" void contextSwitch(TCB::Context* oldContext, TCB::Context* newContext);
+    friend class RiscvHardware;
+    friend class Interrupts;
+
+    static void threadWrapper();
+    static void contextSwitch(Context *oldContext, Context *runningContext);
+    static void dispatch();
+
+    static uint64 timeSliceCounter;
+
+    static uint64 constexpr STACK_SIZE = 1024;
+    static uint64 constexpr TIME_SLICE = 2;
+};
 
 #endif

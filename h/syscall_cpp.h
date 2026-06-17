@@ -3,10 +3,6 @@
 
 #include "syscall_c.h"
 
-void* operator new (size_t);
-void operator delete (void*);
-
-
 class Thread {
 public:
     Thread (void (*body)(void*), void* arg);

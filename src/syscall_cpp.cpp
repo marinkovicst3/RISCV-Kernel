@@ -1,12 +1,5 @@
 #include "../h/syscall_cpp.h"
 
-void* operator new (size_t size) {
-    return mem_alloc(size);
-}
-
-void operator delete (void* p){
-    mem_free(p);
-}
 
 Thread::Thread(void(*body)(void *), void *arg) : myHandle(nullptr),body(body),arg(arg){}
 
