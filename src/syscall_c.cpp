@@ -36,3 +36,27 @@ void thread_dispatch() {
     abi_syscall(0x13);
 }
 
+int sem_open(sem_t*handle, unsigned init) {
+    return (int)(size_t)abi_syscall(0x21, (size_t)handle, (size_t)init);
+}
+
+int sem_close(sem_t handle) {
+    return (int)(size_t)abi_syscall(0x22, (size_t)handle);
+}
+
+int sem_wait(sem_t id) {
+    return (int)(size_t)abi_syscall(0x23, (size_t)id);
+}
+
+int sem_signal(sem_t id) {
+    return (int)(size_t)abi_syscall(0x24, (size_t)id);
+}
+
+int sem_wait_n(sem_t id, unsigned n) {
+    return (int)(size_t)abi_syscall(0x25, (size_t)id,(size_t) n);
+}
+
+int sem_signal_n(sem_t id, unsigned n) {
+    return (int)(size_t)abi_syscall(0x26, (size_t)id,(size_t) n);
+}
+

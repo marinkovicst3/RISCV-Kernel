@@ -2,11 +2,82 @@
 #define DEQUE_H
 
 #include "memoryAllocator.h"
+#include "global_allocators.h"
 
 template <typename T>
 class Deque {
+private:
+    struct Node {
+        T data;
+        Node* next;
+        Node* prev;
+
+        Node(const T& value, Node* n = nullptr, Node* p = nullptr)
+            : data(value), next(n), prev(p) {}
+
+        void* operator new(size_t size) {
+            return MemoryAllocator::getInstance().mem_alloc(size);
+        }
+
+        void operator delete(void* ptr) noexcept {
+            MemoryAllocator::getInstance().mem_free(ptr);
+        }
+    };
+
+    Node* head;
+    Node* tail;
+    size_t count;
 public:
+    class Iterator {
+    public:
+        Iterator(Node* startNode) : curr(startNode) {}
+
+        bool hasNext() const {
+            return curr != nullptr;
+        }
+
+        void next() {
+            if (curr) {
+                curr = curr->next;
+            }
+        }
+
+        T& getData() {
+            return curr->data;
+        }
+    private:
+        friend class Deque;
+        Node* curr;
+    };
+
+    Iterator getIterator() {
+        return Iterator(head);
+    }
+
     Deque() : head(nullptr), tail(nullptr), count(0) {}
+
+
+
+    void erase(Iterator& it) {
+        if (!it.hasNext()) return;
+        Node* toDelete = it.curr;
+        it.next();
+
+        if (toDelete->prev != nullptr) {
+            toDelete->prev->next = toDelete->next;
+        } else {
+            head = toDelete->next;
+        }
+
+        if (toDelete->next != nullptr) {
+            toDelete->next->prev = toDelete->prev;
+        } else {
+            tail = toDelete->prev;
+        }
+
+        operator delete (toDelete);
+        count--;
+    }
 
     void clear() {
         while (!empty()) {
@@ -81,28 +152,6 @@ public:
     const T& back() const {
         return tail->data;
     }
-
-private:
-    struct Node {
-        T data;
-        Node* next;
-        Node* prev;
-
-        Node(const T& value, Node* n = nullptr, Node* p = nullptr)
-            : data(value), next(n), prev(p) {}
-
-        void* operator new(size_t size) {
-            return MemoryAllocator::getInstance().mem_alloc(size);
-        }
-
-        void operator delete(void* ptr) noexcept {
-            MemoryAllocator::getInstance().mem_free(ptr);
-        }
-    };
-
-    Node* head;
-    Node* tail;
-    size_t count;
 };
 
 #endif

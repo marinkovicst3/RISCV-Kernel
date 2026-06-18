@@ -13,6 +13,22 @@ int Thread::start() {
 }
 void Thread::run() {}
 
+Semaphore::Semaphore(unsigned init) {
+    sem_open(&this->myHandle, init);
+}
+
+Semaphore::~Semaphore() {
+    sem_close(this->myHandle);
+}
+
+int Semaphore::wait() {
+    return sem_wait(this->myHandle);
+}
+
+int Semaphore::signal() {
+    return sem_signal(this->myHandle);
+}
+
 void Thread::dispatch() {
     thread_dispatch();
 }

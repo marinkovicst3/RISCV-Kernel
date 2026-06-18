@@ -11,7 +11,10 @@ arg(arg),
 stack(stackAdr),
 context({(uint64) &threadWrapper,stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0 }),
 timeSlice(timeSlice),
-finished(false) {
+finished(false),
+semUnits(0),
+semErrorStatus(0),
+blocked(false){
     if (body != nullptr) {
         Scheduler::getInstance().put(this);
     }
@@ -28,7 +31,7 @@ void TCB::yield() {
 
 void TCB::dispatch() {
     TCB *old = running;
-    if (!old->isFinished()) { Scheduler::getInstance().put(old); }
+    if (!old->isFinished() && !old->isBlocked()) { Scheduler::getInstance().put(old); }
     running = Scheduler::getInstance().get();
     TCB::contextSwitch(&old->context, &running->context);
 }

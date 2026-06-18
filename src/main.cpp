@@ -5,7 +5,8 @@
 #include "../h/riscvHardware.h"
 #include "../h/handleInterrupts.h"
 #include "../h/global_allocators.h"
-
+#include "../h/semaphore.h"
+#include "../h/syscall_c.h"
 
 
 int main() {
@@ -36,13 +37,16 @@ int main() {
     printString("ThreadD created\n");
 
     // RiscvHardware::setSstatusBit(RiscvHardware::SSTATUS_SIE);
-
     while (!(threads[1]->isFinished() && threads[2]->isFinished() &&
              threads[3]->isFinished() && threads[4]->isFinished())) {
         TCB::yield();
              }
 
-    for (auto &thread: threads) { delete thread; }
+    for (auto &thread: threads) { operator delete (thread); }
     printString("Finished\n");
+
+
+
+
     return 0;
 }

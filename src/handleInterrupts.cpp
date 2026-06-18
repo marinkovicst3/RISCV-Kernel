@@ -5,6 +5,7 @@
 #include "../h/tcb.h"
 #include "../lib/hw.h"
 #include "../h/global_allocators.h"
+#include "../h/semaphore.h"
 
 void* Interrupts::handleMemAlloc() {
     size_t blocks = RiscvHardware::readA1();
@@ -20,6 +21,7 @@ int Interrupts::handleMemFree() {
 
 int Interrupts::handleThreadCreate() {
     TCB** handle = (TCB**) RiscvHardware::readA1();
+    if (handle == nullptr) return -1;
     Body routine = (Body) RiscvHardware::readA2();
     void* arg = (void*) RiscvHardware::readA3();
     char* stackSpace = (char*) RiscvHardware::readA4();
@@ -29,6 +31,51 @@ int Interrupts::handleThreadCreate() {
         *handle = newThread;
     }
     return 0;
+}
+
+int Interrupts::handleSemOpen() {
+    MySemaphore** handle = (MySemaphore**) RiscvHardware::readA1();
+    if (handle == nullptr) return -1;
+    unsigned init = (unsigned) RiscvHardware::readA2();
+    MySemaphore* newSem = new MySemaphore(init);
+    if (newSem==nullptr) return -2;
+    *handle = newSem;
+    return 0;
+}
+
+int Interrupts::handleSemClose() {
+    MySemaphore* handle = (MySemaphore*) RiscvHardware::readA1();
+    if (handle == nullptr) return -1;
+
+    int res = handle->close();
+    operator delete(handle);
+    return res;
+}
+
+int Interrupts::handleSemWait() {
+    MySemaphore* handle = (MySemaphore*) RiscvHardware::readA1();
+    if (handle == nullptr) return -1;
+    return handle->wait();
+}
+
+int Interrupts::handleSemSignal() {
+    MySemaphore* handle = (MySemaphore*) RiscvHardware::readA1();
+    if (handle == nullptr) return -1;
+    return handle->signal();
+}
+
+int Interrupts::handleSemWaitN() {
+    MySemaphore* handle = (MySemaphore*) RiscvHardware::readA1();
+    unsigned n = (unsigned) RiscvHardware::readA2();
+    if (handle == nullptr) return -1;
+    return handle->wait_n(n);
+}
+
+int Interrupts::handleSemSignalN() {
+    MySemaphore* handle = (MySemaphore*) RiscvHardware::readA1();
+    unsigned n = (unsigned) RiscvHardware::readA2();
+    if (handle == nullptr) return -1;
+    return handle->signal_n(n);
 }
 
 void Interrupts::handleSupervisorTrap() {
@@ -61,6 +108,35 @@ void Interrupts::handleSupervisorTrap() {
             }
             case 0x13: {
                 TCB::dispatch();
+                break;
+            }
+            case 0x21: {
+                int x = handleSemOpen();
+                RiscvHardware::writeA0OnStack((uint64) x);
+            }
+            case 0x22: {
+                int x = handleSemClose();
+                RiscvHardware::writeA0OnStack((uint64) x);
+                break;
+            }
+            case 0x23: {
+                int x = handleSemWait();
+                RiscvHardware::writeA0OnStack((uint64) x);
+                break;
+            }
+            case 0x24: {
+                int x = handleSemSignal();
+                RiscvHardware::writeA0OnStack((uint64) x);
+                break;
+            }
+            case 0x25: {
+                int x = handleSemWaitN();
+                RiscvHardware::writeA0OnStack((uint64) x);
+                break;
+            }
+            case 0x26: {
+                int x = handleSemSignalN();
+                RiscvHardware::writeA0OnStack((uint64) x);
                 break;
             }
             default:
