@@ -39,7 +39,6 @@ int main() {
 
     while (!(threads[1]->isFinished() && threads[2]->isFinished() &&
              threads[3]->isFinished() && threads[4]->isFinished())) {
-        printString(".");
         TCB::yield();
              }
 

@@ -54,6 +54,11 @@ void Interrupts::handleSupervisorTrap() {
                 RiscvHardware::writeA0OnStack((uint64) x);
                 break;
             }
+            case 0x12: {
+                TCB::running->setFinished(true);
+                TCB::dispatch();
+                break;
+            }
             case 0x13: {
                 TCB::dispatch();
                 break;

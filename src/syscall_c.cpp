@@ -28,6 +28,10 @@ int thread_create(thread_t* handle, void(*start_routine)(void*), void *arg) {
     return (int)(size_t)res;
 }
 
+int thread_exit() {
+    return (int) (uint64) abi_syscall(0x12);
+}
+
 void thread_dispatch() {
     abi_syscall(0x13);
 }
