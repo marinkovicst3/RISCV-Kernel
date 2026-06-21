@@ -21,6 +21,7 @@ int mem_free(void* adr) {
 }
 
 int thread_create(thread_t* handle, void(*start_routine)(void*), void *arg) {
+    if (!handle) return -1;
     void* stack_adr = mem_alloc(DEFAULT_STACK_SIZE);
     if (stack_adr == nullptr) return -1;
     uint64* stack_top = (uint64*)((char*)stack_adr + DEFAULT_STACK_SIZE);

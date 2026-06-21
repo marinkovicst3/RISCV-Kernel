@@ -44,21 +44,7 @@ public:
     static uint64 readSstatus();
     static void writeSstatus(uint64 sstatus);
 
-    static uint64 readA0();
-    static void writeA0(uint64 value);
     static void writeA0OnStack(uint64 value);
-
-    static uint64 readA1();
-    static void writeA1(uint64 value);
-
-    static uint64 readA2();
-    static void writeA2(uint64 value);
-
-    static uint64 readA3();
-    static void writeA3(uint64 value);
-
-    static uint64 readA4();
-    static void writeA4(uint64 value);
 };
 
 
@@ -141,56 +127,6 @@ inline uint64 RiscvHardware::readSstatus() {
 
 inline void RiscvHardware::writeSstatus(uint64 sstatus) {
     __asm__ volatile ("csrw sstatus, %[sstatus]" : : [sstatus] "r"(sstatus));
-}
-
-inline uint64 RiscvHardware::readA0() {
-    uint64 volatile reg_a0;
-    __asm__ volatile ("mv %[out_a0], a0" : [out_a0] "=r"(reg_a0));
-    return reg_a0;
-}
-
-inline void RiscvHardware::writeA0(uint64 value) {
-    __asm__ volatile ("mv a0, %[in_a0]" : : [in_a0] "r"(value));
-}
-
-inline uint64 RiscvHardware::readA1() {
-    uint64 volatile reg_a1;
-    __asm__ volatile ("mv %[out_a1], a1" : [out_a1] "=r"(reg_a1));
-    return reg_a1;
-}
-
-inline void RiscvHardware::writeA1(uint64 value) {
-    __asm__ volatile ("mv a1, %[in_a1]" : : [in_a1] "r"(value));
-}
-
-inline uint64 RiscvHardware::readA2() {
-    uint64 volatile reg_a2;
-    __asm__ volatile ("mv %[out_a2], a2" : [out_a2] "=r"(reg_a2));
-    return reg_a2;
-}
-
-inline void RiscvHardware::writeA2(uint64 value) {
-    __asm__ volatile ("mv a2, %[in_a2]" : : [in_a2] "r"(value));
-}
-
-inline uint64 RiscvHardware::readA3() {
-    uint64 volatile reg_a3;
-    __asm__ volatile ("mv %[out_a3], a3" : [out_a3] "=r"(reg_a3));
-    return reg_a3;
-}
-
-inline void RiscvHardware::writeA3(uint64 value) {
-    __asm__ volatile ("mv a3, %[in_a3]" : : [in_a3] "r"(value));
-}
-
-inline uint64 RiscvHardware::readA4() {
-    uint64 volatile reg_a4;
-    __asm__ volatile ("mv %[out_a4], a4" : [out_a4] "=r"(reg_a4));
-    return reg_a4;
-}
-
-inline void RiscvHardware::writeA4(uint64 value) {
-    __asm__ volatile ("mv a4, %[in_a4]" : : [in_a4] "r"(value));
 }
 
 inline void RiscvHardware::writeA0OnStack(uint64 value) {

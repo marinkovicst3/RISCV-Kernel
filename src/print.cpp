@@ -14,7 +14,7 @@ void printString(char const *string)
     RiscvHardware::setSstatusBit(sstatus & RiscvHardware::SSTATUS_SIE ? RiscvHardware::SSTATUS_SIE : 0);
 }
 
-void printInteger(uint64 integer)
+void printInt(uint64 integer)
 {
     uint64 sstatus = RiscvHardware::readSstatus();
     RiscvHardware::clearSstatusBit(RiscvHardware::SSTATUS_SIE);

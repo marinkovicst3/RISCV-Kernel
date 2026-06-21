@@ -5,6 +5,6 @@
 
 extern void printString(char const *string);
 
-extern void printInteger(uint64 integer);
+extern void printInt(uint64 integer);
 
 #endif //PROJECT_BASE_PRINT_H

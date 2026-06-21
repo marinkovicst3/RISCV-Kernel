@@ -7,15 +7,15 @@ public:
     static void handleSupervisorTrap();
 
 private:
-    static void* handleMemAlloc();
-    static int handleMemFree();
-    static int handleThreadCreate();
-    static int handleSemOpen();
-    static int handleSemClose();
-    static int handleSemWait();
-    static int handleSemWaitN();
-    static int handleSemSignal();
-    static int handleSemSignalN();
+    static void* handleMemAlloc(void* arg1);
+    static int handleMemFree(void* arg1);
+    static int handleThreadCreate(void* arg1,void* arg2,void* arg3,void* arg4);
+    static int handleSemOpen(void* arg1,void* arg2);
+    static int handleSemClose(void* arg1);
+    static int handleSemWait(void* arg1);
+    static int handleSemWaitN(void* arg1,void* arg2);
+    static int handleSemSignal(void* arg1);
+    static int handleSemSignalN(void* arg1,void* arg2);
 
 };
 

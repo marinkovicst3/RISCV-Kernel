@@ -4,13 +4,12 @@
 #include "../h/global_allocators.h"
 
 TCB *TCB::running = nullptr;
-uint64 TCB::timeSliceCounter = 0;
+//uint64 TCB::timeSliceCounter = 0;
 
-TCB::TCB(Body body, void* arg, uint64* stackAdr, uint64 timeSlice) : body(body),
+TCB::TCB(Body body, void* arg, uint64* stackAdr) : body(body),
 arg(arg),
 stack(stackAdr),
 context({(uint64) &threadWrapper,stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0 }),
-timeSlice(timeSlice),
 finished(false),
 semUnits(0),
 semErrorStatus(0),
@@ -21,7 +20,7 @@ blocked(false){
 }
 
 TCB* TCB::createThread(Body body, void* arg, uint64* stackAdr) {
-    return new TCB(body, arg, stackAdr, TIME_SLICE);
+    return new TCB(body, arg, stackAdr);
 }
 
 void TCB::yield() {
@@ -31,7 +30,9 @@ void TCB::yield() {
 
 void TCB::dispatch() {
     TCB *old = running;
-    if (!old->isFinished() && !old->isBlocked()) { Scheduler::getInstance().put(old); }
+    if (!old->isFinished() && !old->isBlocked()) {
+        Scheduler::getInstance().put(old);
+    }
     running = Scheduler::getInstance().get();
     TCB::contextSwitch(&old->context, &running->context);
 }
