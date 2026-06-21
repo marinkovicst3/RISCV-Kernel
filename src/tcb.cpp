@@ -1,15 +1,14 @@
 #include "../h/tcb.h"
 #include "../h/scheduler.h"
-#include "../h/riscvHardware.h"
-#include "../h/global_allocators.h"
 
 TCB *TCB::running = nullptr;
 //uint64 TCB::timeSliceCounter = 0;
 
-TCB::TCB(Body body, void* arg, uint64* stackAdr) : body(body),
+TCB::TCB(Body body, void* arg, uint64* stackAdr) :
+body(body),
 arg(arg),
 stack(stackAdr),
-context({(uint64) &threadWrapper,stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0 }),
+context({(uint64) &threadWrapper,stack != nullptr ? (uint64)stackAdr + DEFAULT_STACK_SIZE : 0 }),
 finished(false),
 semUnits(0),
 semErrorStatus(0),
@@ -24,7 +23,8 @@ TCB* TCB::createThread(Body body, void* arg, uint64* stackAdr) {
 }
 
 void TCB::yield() {
-    RiscvHardware::writeA0(0x13);
+    uint64 val = 0x13;
+    __asm__ volatile ("mv a0, %0" : : "r"(val));
     __asm__ volatile ("ecall");
 }
 

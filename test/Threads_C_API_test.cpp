@@ -4,10 +4,10 @@
 
 #include "../h/print.h"
 
-static volatile bool finishedA = false;
-static volatile bool finishedB = false;
-static volatile bool finishedC = false;
-static volatile bool finishedD = false;
+static volatile bool finishedA1 = false;
+static volatile bool finishedB1 = false;
+static volatile bool finishedC1 = false;
+static volatile bool finishedD1 = false;
 
 static uint64 fibonacci(uint64 n) {
     if (n == 0 || n == 1) { return n; }
@@ -24,7 +24,7 @@ static void workerBodyA(void* arg) {
         }
     }
     printString("A finished!\n");
-    finishedA = true;
+    finishedA1 = true;
 }
 
 static void workerBodyB(void* arg) {
@@ -36,7 +36,7 @@ static void workerBodyB(void* arg) {
         }
     }
     printString("B finished!\n");
-    finishedB = true;
+    finishedB1 = true;
     thread_dispatch();
 }
 
@@ -63,7 +63,7 @@ static void workerBodyC(void* arg) {
     }
 
     printString("C finished!\n");
-    finishedC = true;
+    finishedC1 = true;
     thread_dispatch();
 }
 
@@ -85,7 +85,7 @@ static void workerBodyD(void* arg) {
     }
 
     printString("D finished!\n");
-    finishedD = true;
+    finishedD1 = true;
     thread_dispatch();
 }
 
@@ -104,7 +104,7 @@ void Threads_C_API_test() {
     thread_create(&threads[3], workerBodyD, nullptr);
     printString("ThreadD created\n");
 
-    while (!(finishedA && finishedB && finishedC && finishedD)) {
+    while (!(finishedA1 && finishedB1 && finishedC1 && finishedD1)) {
         thread_dispatch();
     }
 

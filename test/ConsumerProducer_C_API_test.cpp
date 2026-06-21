@@ -2,7 +2,8 @@
 // #include "../h/syscall_c.h"
 //
 // #include "buffer.hpp"
-//
+// #include "printing.hpp"
+// #include "../lib/console.h"
 // static sem_t waitForAll;
 //
 // struct thread_data {
@@ -18,7 +19,7 @@
 //
 //     int key;
 //     int i = 0;
-//     while ((key = getc()) != 0x1b) {
+//     while ((key = __getc()) != 0x1b) {
 //         data->buffer->put(key);
 //         i++;
 //
@@ -57,20 +58,20 @@
 //         int key = data->buffer->get();
 //         i++;
 //
-//         putc(key);
+//         __putc(key);
 //
 //         if (i % (5 * data->id) == 0) {
 //             thread_dispatch();
 //         }
 //
 //         if (i % 80 == 0) {
-//             putc('\n');
+//             __putc('\n');
 //         }
 //     }
 //
 //     while (data->buffer->getCnt() > 0) {
 //         int key = data->buffer->get();
-//         putc(key);
+//         __putc(key);
 //     }
 //
 //     sem_signal(data->wait);

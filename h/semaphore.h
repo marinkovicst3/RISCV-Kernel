@@ -6,17 +6,22 @@ class TCB;
 
 class MySemaphore {
 public:
-    MySemaphore(unsigned val);
+    void* operator new(size_t size) {
+        return MemoryAllocator::getInstance().mem_alloc(size);
+    }
+
+    MySemaphore(unsigned int val);
+
     int wait();
     int signal();
 
-    int wait_n(unsigned n);
-    int signal_n(unsigned n);
+    int wait_n(unsigned int n);
+    int signal_n(unsigned int n);
 
     int close();
 
 private:
-    void block(unsigned val);
+    void block(unsigned int val);
     void unblock();
 
     bool closed;

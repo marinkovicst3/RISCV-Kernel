@@ -2,11 +2,14 @@
 #define DEQUE_H
 
 #include "memoryAllocator.h"
-#include "global_allocators.h"
 
 template <typename T>
 class Deque {
 private:
+    void operator delete(void* ptr) {
+        MemoryAllocator::getInstance().mem_free(ptr);
+    }
+
     struct Node {
         T data;
         Node* next;
@@ -19,7 +22,7 @@ private:
             return MemoryAllocator::getInstance().mem_alloc(size);
         }
 
-        void operator delete(void* ptr) noexcept {
+        void operator delete(void* ptr) {
             MemoryAllocator::getInstance().mem_free(ptr);
         }
     };

@@ -1,10 +1,6 @@
 #include "../h/handleInterrupts.h"
-
-#include "../h/memoryAllocator.h"
 #include "../h/riscvHardware.h"
 #include "../h/tcb.h"
-#include "../lib/hw.h"
-#include "../h/global_allocators.h"
 #include "../h/semaphore.h"
 #include "../h/print.h"
 
@@ -23,9 +19,9 @@ int Interrupts::handleMemFree(void* arg1) {
 int Interrupts::handleThreadCreate(void* arg1,void* arg2,void* arg3,void* arg4) {
     TCB** handle = (TCB**) arg1;
     Body routine = (Body) arg2;
-    void* arg = (void*) arg3;
+    void* arg = arg3;
     char* stackSpace = (char*) arg4;
-    TCB* newThread = new TCB(routine, arg,(uint64*) stackSpace);
+    TCB* newThread = TCB::createThread(routine,arg,(uint64*)stackSpace);
     if (newThread == nullptr) return -1;
     if (handle != nullptr) {
         *handle = newThread;
@@ -35,8 +31,7 @@ int Interrupts::handleThreadCreate(void* arg1,void* arg2,void* arg3,void* arg4) 
 
 int Interrupts::handleSemOpen(void* arg1,void* arg2) {
     MySemaphore** handle = (MySemaphore**) arg1;
-    if (handle == nullptr) return -1;
-    unsigned init = (unsigned) (size_t)arg2;
+    unsigned int init = (unsigned int) (uint64)arg2;
     MySemaphore* newSem = new MySemaphore(init);
     if (newSem==nullptr) return -2;
     *handle = newSem;
@@ -45,35 +40,29 @@ int Interrupts::handleSemOpen(void* arg1,void* arg2) {
 
 int Interrupts::handleSemClose(void* arg1) {
     MySemaphore* handle = (MySemaphore*) arg1;
-    if (handle == nullptr) return -1;
     int res = handle->close();
-    operator delete(handle);
     return res;
 }
 
 int Interrupts::handleSemWait(void* arg1) {
     MySemaphore* handle = (MySemaphore*) arg1;
-    if (handle == nullptr) return -1;
     return handle->wait();
 }
 
 int Interrupts::handleSemSignal(void* arg1) {
     MySemaphore* handle = (MySemaphore*) arg1;
-    if (handle == nullptr) return -1;
     return handle->signal();
 }
 
 int Interrupts::handleSemWaitN(void* arg1, void* arg2) {
     MySemaphore* handle = (MySemaphore*) arg1;
-    unsigned n = (unsigned) (size_t) arg2;
-    if (handle == nullptr) return -1;
+    unsigned int n = (unsigned int) (uint64) arg2;
     return handle->wait_n(n);
 }
 
 int Interrupts::handleSemSignalN(void* arg1, void* arg2) {
     MySemaphore* handle = (MySemaphore*) arg1;
-    unsigned n = (unsigned) (size_t) arg2;
-    if (handle == nullptr) return -1;
+    unsigned int n = (unsigned int) (uint64) arg2;
     return handle->signal_n(n);
 }
 

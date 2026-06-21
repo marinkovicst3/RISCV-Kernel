@@ -2,6 +2,8 @@
 #define TCB_H
 
 #include "../lib/hw.h"
+#include "memoryAllocator.h"
+
 using Body = void (*)(void*);
 
 class TCB {
@@ -25,6 +27,15 @@ public:
     static void yield();
     static TCB *running;
 private:
+
+    void* operator new(size_t size) {
+        return MemoryAllocator::getInstance().mem_alloc(size);
+    }
+
+    void operator delete(void* ptr){
+        MemoryAllocator::getInstance().mem_free(ptr);
+    }
+
     TCB(Body body,void* arg, uint64* stackAdr);
 
     struct Context {
@@ -51,8 +62,6 @@ private:
     static void dispatch();
 
     // static uint64 timeSliceCounter;
-    //
-    static uint64 constexpr STACK_SIZE = 1024;
     // static uint64 constexpr TIME_SLICE = 2;
 };
 

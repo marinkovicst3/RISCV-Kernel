@@ -1,9 +1,8 @@
 #include "../h/semaphore.h"
-
 #include "../h/scheduler.h"
 #include "../h/tcb.h"
 
-MySemaphore::MySemaphore(unsigned val):closed(false) ,val((int)val){}
+MySemaphore::MySemaphore(unsigned int val):closed(false) ,val((int)val){}
 
 int MySemaphore::wait() {
     return wait_n(1);
@@ -13,7 +12,7 @@ int MySemaphore::signal() {
     return signal_n(1);
 }
 
-int MySemaphore::wait_n(unsigned n) {
+int MySemaphore::wait_n(unsigned int n) {
     if (closed) return -1;
     if (val >= (int)n) {
         val -= (int)n;
@@ -23,7 +22,7 @@ int MySemaphore::wait_n(unsigned n) {
     return TCB::running->getSemErrorStatus();
 }
 
-int MySemaphore::signal_n(unsigned n) {
+int MySemaphore::signal_n(unsigned int n) {
     if (closed) return -1;
     val+=(int)n;
     unblock();

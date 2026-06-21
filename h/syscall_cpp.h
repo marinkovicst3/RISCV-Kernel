@@ -3,6 +3,11 @@
 
 #include "syscall_c.h"
 
+void* operator new (size_t);
+void operator delete (void*);
+void* operator new[] (size_t);
+void operator delete[] (void*);
+
 class Thread {
 public:
     Thread (void (*body)(void*), void* arg);
@@ -15,6 +20,7 @@ protected:
     virtual void run ();
 
 private:
+    static void wrapper(void* obj);
     thread_t myHandle;
     void (*body)(void*); void* arg;
 };

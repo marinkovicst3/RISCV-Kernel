@@ -1,19 +1,47 @@
 #include "../h/syscall_cpp.h"
 
+void* operator new(size_t sz) {
+    return mem_alloc(sz);
+}
+
+void operator delete(void* ptr) {
+    mem_free(ptr);
+}
+
+void* operator new[](size_t sz) {
+    return mem_alloc(sz);
+}
+
+void operator delete[](void* ptr) {
+    mem_free(ptr);
+}
 
 Thread::Thread(void(*body)(void *), void *arg) : myHandle(nullptr),body(body),arg(arg){}
 
 Thread::Thread() :Thread(nullptr,nullptr){}
 
-
 Thread::~Thread() {}
 
 int Thread::start() {
-    return thread_create(&myHandle,body,arg);
+    if (body) {
+        return thread_create(&myHandle,body,arg);
+    }
+    return thread_create(&myHandle,&Thread::wrapper,this);
 }
+
+void Thread::wrapper(void* obj) {
+    if (obj != nullptr) {
+        ((Thread*)obj)->run();
+    }
+}
+
+void Thread::dispatch() {
+    thread_dispatch();
+}
+
 void Thread::run() {}
 
-Semaphore::Semaphore(unsigned init) {
+Semaphore::Semaphore(unsigned int init) {
     sem_open(&this->myHandle, init);
 }
 
@@ -27,10 +55,6 @@ int Semaphore::wait() {
 
 int Semaphore::signal() {
     return sem_signal(this->myHandle);
-}
-
-void Thread::dispatch() {
-    thread_dispatch();
 }
 
 // int Thread::sleep(time_t) {
