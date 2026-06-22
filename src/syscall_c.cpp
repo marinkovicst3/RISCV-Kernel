@@ -66,3 +66,8 @@ int sem_signal_n(sem_t id, unsigned int n) {
     return (int)(uint64)abi_syscall(0x26, (uint64)id,n);
 }
 
+int time_sleep(time_t period) {
+    if (period <= 0) return -1;
+    return (int)(uint64)abi_syscall(0x31, period);
+}
+

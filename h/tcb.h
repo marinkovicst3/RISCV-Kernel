@@ -12,7 +12,7 @@ public:
     ~TCB() { delete[] stack; }
     bool isFinished() const { return finished; }
     bool isBlocked() const { return blocked; }
-
+    bool isAsleep() const {return asleep;}
 
     void setFinished(bool value) { finished = value; }
     void setSemErrorStatus(int value) { semErrorStatus = value; }
@@ -29,7 +29,8 @@ public:
 private:
 
     void* operator new(size_t size) {
-        return MemoryAllocator::getInstance().mem_alloc(size);
+        uint64 blocks = (size+MEM_BLOCK_SIZE-1)/MEM_BLOCK_SIZE;
+        return MemoryAllocator::getInstance().mem_alloc(blocks);
     }
 
     void operator delete(void* ptr){
@@ -53,6 +54,7 @@ private:
     unsigned semUnits;
     int semErrorStatus;
     bool blocked;
+    bool asleep;
 
     friend class RiscvHardware;
     friend class Interrupts;
@@ -60,8 +62,16 @@ private:
     static void threadWrapper();
     static void contextSwitch(Context *oldContext, Context *runningContext);
     static void dispatch();
+    static void insertSleepingThread(TCB* thread, time_t period);
+    static void updateSleepList();
 
     static uint64 timeSliceCounter;
+    static TCB* sleepHead;
+    static TCB* sleepTail;
+    TCB* next;
+    TCB* prev;
+
+    time_t sleepTime;
 };
 
 #endif

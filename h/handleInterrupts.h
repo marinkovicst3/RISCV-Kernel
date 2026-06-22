@@ -17,7 +17,7 @@ private:
     static int handleSemWaitN(void* arg1,void* arg2);
     static int handleSemSignal(void* arg1);
     static int handleSemSignalN(void* arg1,void* arg2);
-
+    static int handleTimeSleep(void* arg1);
 };
 
 #endif

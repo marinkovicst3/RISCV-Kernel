@@ -7,7 +7,8 @@ class TCB;
 class MySemaphore {
 public:
     void* operator new(size_t size) {
-        return MemoryAllocator::getInstance().mem_alloc(size);
+        uint64 blocks = (size+MEM_BLOCK_SIZE-1)/MEM_BLOCK_SIZE;
+        return MemoryAllocator::getInstance().mem_alloc(blocks);
     }
 
     MySemaphore(unsigned int val);

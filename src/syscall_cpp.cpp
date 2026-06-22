@@ -39,6 +39,10 @@ void Thread::dispatch() {
     thread_dispatch();
 }
 
+int Thread::sleep(time_t period) {
+    return time_sleep(period);
+}
+
 void Thread::run() {}
 
 Semaphore::Semaphore(unsigned int init) {
@@ -57,7 +61,6 @@ int Semaphore::signal() {
     return sem_signal(this->myHandle);
 }
 
-// int Thread::sleep(time_t) {
-// }
+
 
 

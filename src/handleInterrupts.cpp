@@ -72,6 +72,13 @@ int Interrupts::handleSemSignalN(void* arg1, void* arg2) {
     return handle->signal_n(n);
 }
 
+int Interrupts::handleTimeSleep(void* arg1) {
+    time_t period = (time_t)arg1;
+    TCB::insertSleepingThread(TCB::running,period);
+    TCB::dispatch();
+    return 0;
+}
+
 void Interrupts::handleSupervisorTrap() {
     uint64 args[5];
     asm  volatile("mv %0, a0" : "=r"(args[0]));
@@ -140,18 +147,19 @@ void Interrupts::handleSupervisorTrap() {
                 RiscvHardware::writeA0OnStack((uint64) x);
                 break;
             }
+            case 0x31: {
+                int x = handleTimeSleep((void*)args[1]);
+                RiscvHardware::writeA0OnStack((uint64) x);
+                break;
+            }
             default:
                 break;
         }
         RiscvHardware::writeSepc(currentSepc);
         RiscvHardware::writeSstatus(currentSstatus);
     }
-    else if (scause == 0x8000000000000001UL) {
-        handleTimerInterrupt();
-    }
-    else if (scause == 0x8000000000000009UL) {
-        console_handler();
-    }
+    else if (scause == 0x8000000000000001UL) handleTimerInterrupt();
+    else if (scause == 0x8000000000000009UL) console_handler();
     else {
         uint64 scause = RiscvHardware::readScause();
         uint64 stval = RiscvHardware::readStval();
@@ -180,11 +188,11 @@ void Interrupts::handleSupervisorTrap() {
 void Interrupts::handleTimerInterrupt() {
     RiscvHardware::clearSipBit(RiscvHardware::SIP_SSIP);
     TCB* running = TCB::running;
+    TCB::updateSleepList();
     TCB::timeSliceCounter++;
     if (running->getTimeSlice() <= TCB::timeSliceCounter) {
         uint64 currentSepc = RiscvHardware::readSepc();
         uint64 currentSstatus = RiscvHardware::readSstatus();
-        TCB::timeSliceCounter = 0;
         TCB::dispatch();
         RiscvHardware::writeSstatus(currentSstatus);
         RiscvHardware::writeSepc(currentSepc);
