@@ -2,7 +2,13 @@
 #include "../h/riscvHardware.h"
 #include "../h/tcb.h"
 #include "../h/semaphore.h"
-#include "../h/print.h"
+#include "../test/printing.hpp"
+#include "../lib/console.h"
+
+void RiscvHardware::popSppSpie() {
+    __asm__ volatile ("csrw sepc, ra");
+    __asm__ volatile ("sret");
+}
 
 void* Interrupts::handleMemAlloc(void* arg1) {
     size_t blocks = (size_t) arg1;
@@ -75,10 +81,10 @@ void Interrupts::handleSupervisorTrap() {
     asm  volatile("mv %0, a4" : "=r"(args[4]));
 
     uint64 scause = RiscvHardware::readScause();
+    uint64 currentSepc = RiscvHardware::readSepc();
+    uint64 currentSstatus = RiscvHardware::readSstatus();
     if (scause == 0x08UL || scause == 0x09UL) {
-        uint64 currentSepc = RiscvHardware::readSepc();
-        RiscvHardware::writeSepc(currentSepc + 4);
-
+        currentSepc+=4;
         switch (args[0]) {
             case 0x01: {
                 void* adr = handleMemAlloc((void*)args[1]);
@@ -137,6 +143,14 @@ void Interrupts::handleSupervisorTrap() {
             default:
                 break;
         }
+        RiscvHardware::writeSepc(currentSepc);
+        RiscvHardware::writeSstatus(currentSstatus);
+    }
+    else if (scause == 0x8000000000000001UL) {
+        handleTimerInterrupt();
+    }
+    else if (scause == 0x8000000000000009UL) {
+        console_handler();
     }
     else {
         uint64 scause = RiscvHardware::readScause();
@@ -160,4 +174,20 @@ void Interrupts::handleSupervisorTrap() {
         printInt(sepc);
         printString("\n");
     }
+
+}
+
+void Interrupts::handleTimerInterrupt() {
+    RiscvHardware::clearSipBit(RiscvHardware::SIP_SSIP);
+    TCB* running = TCB::running;
+    TCB::timeSliceCounter++;
+    if (running->getTimeSlice() <= TCB::timeSliceCounter) {
+        uint64 currentSepc = RiscvHardware::readSepc();
+        uint64 currentSstatus = RiscvHardware::readSstatus();
+        TCB::timeSliceCounter = 0;
+        TCB::dispatch();
+        RiscvHardware::writeSstatus(currentSstatus);
+        RiscvHardware::writeSepc(currentSepc);
+    }
+
 }

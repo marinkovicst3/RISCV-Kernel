@@ -2,7 +2,7 @@
 #include "../h/syscall_c.h"
 #include "Threads_C_API_test.hpp"
 
-#include "../h/print.h"
+#include "printing.hpp"
 
 static volatile bool finishedA1 = false;
 static volatile bool finishedB1 = false;

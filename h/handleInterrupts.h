@@ -5,6 +5,7 @@ class Interrupts {
 public:
     static void supervisorTrap();
     static void handleSupervisorTrap();
+    static void handleTimerInterrupt();
 
 private:
     static void* handleMemAlloc(void* arg1);

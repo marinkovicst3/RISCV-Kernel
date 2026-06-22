@@ -5,6 +5,7 @@
 
 class RiscvHardware{
 public:
+    static void stopEmulator();
 
     static void popSppSpie();
 
@@ -47,10 +48,10 @@ public:
     static void writeA0OnStack(uint64 value);
 };
 
-
-inline void RiscvHardware::popSppSpie() {
-    __asm__ volatile ("csrw sepc, ra");
-    __asm__ volatile ("sret");
+inline void RiscvHardware::stopEmulator() {
+    asm volatile("li t0, 0x5555");
+    asm volatile("li t1, 0x100000");
+    asm volatile("sw t0, 0(t1)");
 }
 
 inline uint64 RiscvHardware::readScause() {

@@ -19,7 +19,7 @@ public:
     void setSemUnits(int value){ semUnits = value; }
     void setBlocked(bool value) { blocked = value; }
 
-    //uint64 getTimeSlice() const { return timeSlice; }
+    uint64 getTimeSlice() const { return timeSlice; }
     int getSemErrorStatus() const { return semErrorStatus; }
     unsigned getSemUnits() const { return semUnits; }
 
@@ -36,7 +36,7 @@ private:
         MemoryAllocator::getInstance().mem_free(ptr);
     }
 
-    TCB(Body body,void* arg, uint64* stackAdr);
+    TCB(Body body,void* arg, uint64* stackAdr,uint64 timeslice);
 
     struct Context {
         uint64 ra;
@@ -47,7 +47,7 @@ private:
     void* arg;
     uint64 *stack;
     Context context;
-    //uint64 timeSlice;
+    uint64 timeSlice;
     bool finished;
 
     unsigned semUnits;
@@ -61,8 +61,7 @@ private:
     static void contextSwitch(Context *oldContext, Context *runningContext);
     static void dispatch();
 
-    // static uint64 timeSliceCounter;
-    // static uint64 constexpr TIME_SLICE = 2;
+    static uint64 timeSliceCounter;
 };
 
 #endif

@@ -1,14 +1,17 @@
 #include "../h/tcb.h"
+
+#include "../h/riscvHardware.h"
 #include "../h/scheduler.h"
 
 TCB *TCB::running = nullptr;
-//uint64 TCB::timeSliceCounter = 0;
+uint64 TCB::timeSliceCounter = 0;
 
-TCB::TCB(Body body, void* arg, uint64* stackAdr) :
+TCB::TCB(Body body, void* arg, uint64* stackAdr,uint64 timeSlice) :
 body(body),
 arg(arg),
 stack(stackAdr),
 context({(uint64) &threadWrapper,stack != nullptr ? (uint64)stackAdr + DEFAULT_STACK_SIZE : 0 }),
+timeSlice(timeSlice),
 finished(false),
 semUnits(0),
 semErrorStatus(0),
@@ -19,7 +22,7 @@ blocked(false){
 }
 
 TCB* TCB::createThread(Body body, void* arg, uint64* stackAdr) {
-    return new TCB(body, arg, stackAdr);
+    return new TCB(body, arg, stackAdr,DEFAULT_TIME_SLICE);
 }
 
 void TCB::yield() {
@@ -38,7 +41,11 @@ void TCB::dispatch() {
 }
 
 void TCB::threadWrapper() {
-    //RiscvHardware::popSppSpie();
+    if(running->body)
+        RiscvHardware::clearSstatusBit(RiscvHardware::SSTATUS_SPP);
+    else
+        RiscvHardware::setSstatusBit(RiscvHardware::SSTATUS_SPP);
+    RiscvHardware::popSppSpie();
     running->body(running->arg);
     running->setFinished(true);
     TCB::yield();
