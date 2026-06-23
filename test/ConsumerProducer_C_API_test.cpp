@@ -1,9 +1,8 @@
 
 #include "../h/syscall_c.h"
-
+#include "../h/syscall_cpp.h"
 #include "buffer.hpp"
-#include "printing.hpp"
-#include "../lib/console.h"
+
 static sem_t waitForAll;
 
 struct thread_data {
@@ -14,25 +13,25 @@ struct thread_data {
 
 static volatile int threadEnd = 0;
 
-// static void producerKeyboard(void *arg) {
-//     struct thread_data *data = (struct thread_data *) arg;
-//
-//     int key;
-//     int i = 0;
-//     while ((key = __getc()) != 0x1b) {
-//         data->buffer->put(key);
-//         i++;
-//
-//         if (i % (10 * data->id) == 0) {
-//             thread_dispatch();
-//         }
-//     }
-//
-//     threadEnd = 1;
-//     data->buffer->put('!');
-//
-//     sem_signal(data->wait);
-// }
+static void producerKeyboard(void *arg) {
+    struct thread_data *data = (struct thread_data *) arg;
+
+    int key;
+    int i = 0;
+    while ((key = getc()) != 'q') {
+        data->buffer->put(key);
+        i++;
+
+        if (i % (10 * data->id) == 0) {
+            thread_dispatch();
+        }
+    }
+
+    threadEnd = 1;
+    data->buffer->put('!');
+
+    sem_signal(data->wait);
+}
 
 static void producer(void *arg) {
     struct thread_data *data = (struct thread_data *) arg;
@@ -58,35 +57,36 @@ static void consumer(void *arg) {
         int key = data->buffer->get();
         i++;
 
-        __putc(key);
+        putc(key);
 
         if (i % (5 * data->id) == 0) {
             thread_dispatch();
         }
 
         if (i % 80 == 0) {
-            __putc('\n');
+            putc('\n');
         }
     }
 
     while (data->buffer->getCnt() > 0) {
         int key = data->buffer->get();
-        __putc(key);
+        putc(key);
     }
 
     sem_signal(data->wait);
 }
 
 void producerConsumer_C_API() {
-    // char input[30];
+    char input[30];
     int n, threadNum;
-    // printString("Unesite broj proizvodjaca?\n");
-    // getString(input, 30);
-    threadNum = 10;
 
-    // printString("Unesite velicinu bafera?\n");
-    // getString(input, 30);
-    n = 100;
+    printString("Unesite broj proizvodjaca?\n");
+    getString(input, 30);
+    threadNum = stringToInt(input);
+
+    printString("Unesite velicinu bafera?\n");
+    getString(input, 30);
+    n = stringToInt(input);
 
     printString("Broj proizvodjaca "); printInt(threadNum);
     printString(" i velicina bafera "); printInt(n);
@@ -119,10 +119,9 @@ void producerConsumer_C_API() {
         data[i].buffer = buffer;
         data[i].wait = waitForAll;
 
-        // thread_create(threads + i,
-        //               i > 0 ? producer : producerKeyboard,
-        //               data + i);
-        thread_create(threads + i, producer, data + i);
+        thread_create(threads + i,
+                      i > 0 ? producer : producerKeyboard,
+                      data + i);
     }
 
     thread_dispatch();

@@ -1,5 +1,6 @@
 #include  "../h/syscall_c.h"
 
+
 void* abi_syscall(uint64 opcode, uint64 args1=0, uint64 args2 = 0, uint64 args3 = 0,uint64 args4 = 0) {
     void* ret;
     __asm__ __volatile__(
@@ -69,5 +70,13 @@ int sem_signal_n(sem_t id, unsigned int n) {
 int time_sleep(time_t period) {
     if (period <= 0) return -1;
     return (int)(uint64)abi_syscall(0x31, period);
+}
+
+char getc() {
+    return (char)(unsigned long) abi_syscall(0x41);
+}
+
+void putc(char c) {
+    abi_syscall(0x42,(uint64) c);
 }
 

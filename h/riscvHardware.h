@@ -6,7 +6,7 @@
 class RiscvHardware{
 public:
     static void stopEmulator();
-
+    static void writeA0OnStack(uint64 value);
     static void popSppSpie();
 
     static uint64 readScause();
@@ -45,7 +45,14 @@ public:
     static uint64 readSstatus();
     static void writeSstatus(uint64 sstatus);
 
-    static void writeA0OnStack(uint64 value);
+    enum BitMaskSie
+    {
+        SIE_SSIE = (1 << 1), // Timer Interrupt
+        SIE_SEIE = (1 << 9), // Hardware Interrupt
+    };
+    static void setSieBit(uint64 mask);
+
+
 };
 
 inline void RiscvHardware::stopEmulator() {
@@ -135,5 +142,9 @@ inline void RiscvHardware::writeA0OnStack(uint64 value) {
     __asm__ __volatile__("mv %0, s0" : "=r"(current_fp));
     uint64* a0_address = (uint64*)(current_fp + 80);
     *a0_address = value;
+}
+
+inline void RiscvHardware::setSieBit(uint64 mask) {
+    __asm__ volatile ("csrs sie, %[mask]" : : [mask] "r"(mask));
 }
 #endif

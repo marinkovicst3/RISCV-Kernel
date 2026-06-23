@@ -36,21 +36,24 @@ private:
 };
 
 
-// class PeriodicThread : public Thread {
-// public:
-//     void terminate ();
-// protected:
-//     PeriodicThread (time_t period);
-//     virtual void periodicActivation () {}
-// private:
-//     time_t period;
-// };
-//
-//
-// class Console {
-// public:
-//     static char getc ();
-//     static void putc (char);
-// };
+class PeriodicThread : public Thread {
+public:
+    void terminate ();
+protected:
+    PeriodicThread (time_t period);
+    virtual void periodicActivation ();
+
+private:
+    void run() override;
+    bool running;
+    time_t period;
+};
+
+
+class Console {
+public:
+    static char getc ();
+    static void putc (char);
+};
 
 #endif

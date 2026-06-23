@@ -1,5 +1,4 @@
 #include "../h/tcb.h"
-
 #include "../h/riscvHardware.h"
 #include "../h/scheduler.h"
 
@@ -8,7 +7,7 @@ uint64 TCB::timeSliceCounter = 0;
 TCB* TCB::sleepHead = nullptr;
 TCB* TCB::sleepTail = nullptr;
 
-TCB::TCB(Body body, void* arg, uint64* stackAdr,uint64 timeSlice) :
+TCB::TCB(Body body, void* arg, uint64* stackAdr,uint64 timeSlice,bool isKernelThread) :
 body(body),
 arg(arg),
 stack(stackAdr),
@@ -19,6 +18,7 @@ semUnits(0),
 semErrorStatus(0),
 blocked(false),
 asleep(false),
+isKernelThread(isKernelThread),
 next(nullptr),
 prev(nullptr){
     if (body != nullptr) {
@@ -26,8 +26,25 @@ prev(nullptr){
     }
 }
 
-TCB* TCB::createThread(Body body, void* arg, uint64* stackAdr) {
-    return new TCB(body, arg, stackAdr,DEFAULT_TIME_SLICE);
+TCB::~TCB() {
+    if (stack!=nullptr) {
+        MemoryAllocator::getInstance().mem_free(stack);
+    }
+}
+
+TCB* TCB::createThread(Body body, void* arg, uint64* stackAdr, bool isKernelThread) {
+    return new TCB(body, arg, stackAdr,DEFAULT_TIME_SLICE,isKernelThread);
+}
+
+void TCB::threadWrapper() {
+    if(!running->isKernelThread)
+        RiscvHardware::clearSstatusBit(RiscvHardware::SSTATUS_SPP);
+    else
+        RiscvHardware::setSstatusBit(RiscvHardware::SSTATUS_SPP);
+    RiscvHardware::popSppSpie();
+    running->body(running->arg);
+    running->setFinished(true);
+    TCB::yield();
 }
 
 void TCB::yield() {
@@ -97,16 +114,4 @@ void TCB::updateSleepList() {
         wakeUpThread->asleep = false;
         Scheduler::getInstance().put(wakeUpThread);
     }
-}
-
-
-void TCB::threadWrapper() {
-    if(running->body)
-        RiscvHardware::clearSstatusBit(RiscvHardware::SSTATUS_SPP);
-    else
-        RiscvHardware::setSstatusBit(RiscvHardware::SSTATUS_SPP);
-    RiscvHardware::popSppSpie();
-    running->body(running->arg);
-    running->setFinished(true);
-    TCB::yield();
 }

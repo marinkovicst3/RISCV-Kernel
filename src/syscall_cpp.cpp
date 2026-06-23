@@ -50,7 +50,9 @@ Semaphore::Semaphore(unsigned int init) {
 }
 
 Semaphore::~Semaphore() {
-    sem_close(this->myHandle);
+    if (myHandle!=nullptr) {
+        sem_close(this->myHandle);
+    }
 }
 
 int Semaphore::wait() {
@@ -59,6 +61,29 @@ int Semaphore::wait() {
 
 int Semaphore::signal() {
     return sem_signal(this->myHandle);
+}
+
+PeriodicThread::PeriodicThread(time_t period): running(false),period(period) {}
+
+void PeriodicThread::periodicActivation() {}
+
+void PeriodicThread::terminate() {running = false;}
+
+void PeriodicThread::run() {
+    running = true;
+    while (running) {
+        periodicActivation();
+        if (!running) { break; }
+        time_sleep(period);
+    }
+}
+
+char Console::getc() {
+    return ::getc();
+}
+
+void Console::putc(char c) {
+    ::putc(c);
 }
 
 

@@ -1,5 +1,5 @@
 #include "buffer.hpp"
-#include "../lib/console.h"
+
 Buffer::Buffer(int _cap) : cap(_cap + 1), head(0), tail(0) {
     buffer = (int *)mem_alloc(sizeof(int) * cap);
     sem_open(&itemAvailable, 0);
@@ -9,15 +9,15 @@ Buffer::Buffer(int _cap) : cap(_cap + 1), head(0), tail(0) {
 }
 
 Buffer::~Buffer() {
-    __putc('\n');
+    putc('\n');
     printString("Buffer deleted!\n");
     while (getCnt() > 0) {
         char ch = buffer[head];
-        __putc(ch);
+        putc(ch);
         head = (head + 1) % cap;
     }
-    __putc('!');
-    __putc('\n');
+    putc('!');
+    putc('\n');
 
     mem_free(buffer);
     sem_close(itemAvailable);

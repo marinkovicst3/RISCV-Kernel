@@ -3,12 +3,18 @@
 #include "../h/tcb.h"
 #include "../h/semaphore.h"
 #include "../test/printing.hpp"
-#include "../lib/console.h"
+#include "../h/consoleController.h"
+
+const uint64 Timer_Interrupt = 0x8000000000000001UL;
+const uint64 Hardware_Interrupt = 0x8000000000000009UL;
+const uint64 Usermod_Ecall = 0x08UL;
+const uint64 Kernelmod_Ecall = 0x09UL;
 
 void RiscvHardware::popSppSpie() {
     __asm__ volatile ("csrw sepc, ra");
     __asm__ volatile ("sret");
 }
+
 
 void* Interrupts::handleMemAlloc(void* arg1) {
     size_t blocks = (size_t) arg1;
@@ -79,6 +85,15 @@ int Interrupts::handleTimeSleep(void* arg1) {
     return 0;
 }
 
+char Interrupts::handleGetC() {
+    return ConsoleController::getChar();
+}
+
+void Interrupts::handlePutC(void* arg1) {
+    char c = (char)(uint64)arg1;
+    ConsoleController::putChar(c);
+}
+
 void Interrupts::handleSupervisorTrap() {
     uint64 args[5];
     asm  volatile("mv %0, a0" : "=r"(args[0]));
@@ -90,7 +105,7 @@ void Interrupts::handleSupervisorTrap() {
     uint64 scause = RiscvHardware::readScause();
     uint64 currentSepc = RiscvHardware::readSepc();
     uint64 currentSstatus = RiscvHardware::readSstatus();
-    if (scause == 0x08UL || scause == 0x09UL) {
+    if (scause == Usermod_Ecall || scause == Kernelmod_Ecall) {
         currentSepc+=4;
         switch (args[0]) {
             case 0x01: {
@@ -152,14 +167,27 @@ void Interrupts::handleSupervisorTrap() {
                 RiscvHardware::writeA0OnStack((uint64) x);
                 break;
             }
+            case 0x41: {
+                char c = handleGetC();
+                RiscvHardware::writeA0OnStack((uint64) c);
+                break;
+            }
+            case 0x42: {
+                handlePutC((void*)args[1]);
+                break;
+            }
             default:
                 break;
         }
         RiscvHardware::writeSepc(currentSepc);
         RiscvHardware::writeSstatus(currentSstatus);
     }
-    else if (scause == 0x8000000000000001UL) handleTimerInterrupt();
-    else if (scause == 0x8000000000000009UL) console_handler();
+    else if (scause == Timer_Interrupt) {
+        handleTimerInterrupt();
+    }
+    else if (scause == Hardware_Interrupt) {
+        handleHardwareInterrupt();
+    }
     else {
         uint64 scause = RiscvHardware::readScause();
         uint64 stval = RiscvHardware::readStval();
@@ -198,4 +226,15 @@ void Interrupts::handleTimerInterrupt() {
         RiscvHardware::writeSepc(currentSepc);
     }
 
+}
+
+void Interrupts::handleHardwareInterrupt() {
+    RiscvHardware::clearSipBit(RiscvHardware::SIP_SEIP);
+    uint64 currentSstatus = RiscvHardware::readSstatus();
+    int irq = plic_claim();
+    if (irq == CONSOLE_IRQ) {
+        ConsoleController::handleInterrupt();
+    }
+    plic_complete(irq);
+    RiscvHardware::writeSstatus(currentSstatus);
 }

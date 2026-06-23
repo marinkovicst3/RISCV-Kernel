@@ -9,7 +9,17 @@ using Body = void (*)(void*);
 class TCB {
 public:
     TCB();
-    ~TCB() { delete[] stack; }
+    ~TCB();
+
+    void* operator new(size_t size) {
+        uint64 blocks = (size+MEM_BLOCK_SIZE-1)/MEM_BLOCK_SIZE;
+        return MemoryAllocator::getInstance().mem_alloc(blocks);
+    }
+
+    void operator delete(void* ptr){
+        MemoryAllocator::getInstance().mem_free(ptr);
+    }
+
     bool isFinished() const { return finished; }
     bool isBlocked() const { return blocked; }
     bool isAsleep() const {return asleep;}
@@ -23,21 +33,11 @@ public:
     int getSemErrorStatus() const { return semErrorStatus; }
     unsigned getSemUnits() const { return semUnits; }
 
-    static TCB *createThread(Body body, void* arg, uint64* stackAdr);
+    static TCB *createThread(Body body, void* arg, uint64* stackAdr,bool isKernelThread = false);
     static void yield();
     static TCB *running;
 private:
-
-    void* operator new(size_t size) {
-        uint64 blocks = (size+MEM_BLOCK_SIZE-1)/MEM_BLOCK_SIZE;
-        return MemoryAllocator::getInstance().mem_alloc(blocks);
-    }
-
-    void operator delete(void* ptr){
-        MemoryAllocator::getInstance().mem_free(ptr);
-    }
-
-    TCB(Body body,void* arg, uint64* stackAdr,uint64 timeslice);
+    TCB(Body body,void* arg, uint64* stackAdr,uint64 timeslice,bool isKernelThread);
 
     struct Context {
         uint64 ra;
@@ -55,6 +55,7 @@ private:
     int semErrorStatus;
     bool blocked;
     bool asleep;
+    bool isKernelThread;
 
     friend class RiscvHardware;
     friend class Interrupts;

@@ -78,7 +78,7 @@ public:
             tail = toDelete->prev;
         }
 
-        operator delete (toDelete);
+        delete toDelete;
         count--;
     }
 

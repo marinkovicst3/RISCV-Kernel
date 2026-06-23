@@ -11,6 +11,10 @@ public:
         return MemoryAllocator::getInstance().mem_alloc(blocks);
     }
 
+    void operator delete(void* ptr){
+        MemoryAllocator::getInstance().mem_free(ptr);
+    }
+
     MySemaphore(unsigned int val);
 
     int wait();

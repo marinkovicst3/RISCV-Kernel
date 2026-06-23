@@ -6,6 +6,7 @@ public:
     static void supervisorTrap();
     static void handleSupervisorTrap();
     static void handleTimerInterrupt();
+    static void handleHardwareInterrupt();
 
 private:
     static void* handleMemAlloc(void* arg1);
@@ -18,6 +19,8 @@ private:
     static int handleSemSignal(void* arg1);
     static int handleSemSignalN(void* arg1,void* arg2);
     static int handleTimeSleep(void* arg1);
+    static char handleGetC();
+    static void handlePutC(void* arg1);
 };
 
 #endif
